@@ -1,42 +1,51 @@
 import random
 
 
-player_score = 0
-computer_score = 0
-turn_total = 0
+player1_score = 0
+player2_score = 0
+
 
 def roll_die():
     return random.randint(1,6)
 
-def player_turn(player_score, turn_total):
+def turn(player_score):
+    turn_total = 0
     print(f"Total Score: {player_score}")
-    move = input("Do you want to Roll or Hold (R or H)")
-    if move == "R":
-        roll = roll_die()
-        if roll != 1:
+    while True:
+        move = input("Do you want to Roll or Hold (R or H): ").capitalize()
+
+        if move == "R":
+            roll = roll_die()
             print(f"You rolled a {roll}")
+
+            if roll == 1:
+                print("Turn over. No points.")
+                return 0
+
             turn_total += roll
             print(f"Turn Total: {turn_total}")
-            player_score += roll
-            player_turn(player_score, turn_total)
+            print(f"Total Score: {turn_total + player_score}")
+            if turn_total + player_score > 100:
+                return turn_total
+            
+
+        elif move == "H":
+            return turn_total
+
         else:
-            print("You rolled a 1")
-            player_score -= turn_total
-            turn_total = 0
-            print(f"Total Score: {player_score}")
-    elif move == "H":
-        player_score += turn_total
-        turn_total = 0
+            print("Invalid input. Try again.")
+
+
+while player1_score < 100 and player2_score < 100:
+    if player1_score < 100 and player2_score <= 100:
+        print("Player One")
+        player1_score += turn(player1_score)
     else:
-        print("Invalid Input: Please Try Again")
-        player_turn(player_score, turn_total)
-
-def computer_turn(computer_score, turn_total):
-    print(f"Computer Score: {computer_score}")
-
-first_turn = random.randint(0,1)
-
-if first_turn == 0:
-    player_turn(player_score, turn_total)
-else:
-    computer_turn(computer_score, turn_total)
+        print("Player One Wins")
+        break
+    if player1_score < 100 and player2_score <= 100:
+        print("Player Two")
+        player2_score += turn(player2_score)
+    else:
+        print("Player 2 Wins")
+        break
