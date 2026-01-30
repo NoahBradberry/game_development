@@ -35,7 +35,6 @@ def turn(player_score):
         else:
             print("Invalid input. Try again.")
 
-
 while player1_score < 100 and player2_score < 100:
     if player1_score < 100 and player2_score <= 100:
         print("Player One")
@@ -49,3 +48,5 @@ while player1_score < 100 and player2_score < 100:
     else:
         print("Player 2 Wins")
         break
+
+
