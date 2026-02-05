@@ -51,7 +51,7 @@ def run_game():
         canvas.create_text(SCREEN_WIDTH//2, SCREEN_HEIGHT//2, text = "GAME OVER", fill = "white")
         return
     
-    if random.randint(1, 3) == 1:
+    if random.randint(1, 20) == 1:
         spawn_enemy()
     
     for enemy in enemies:
