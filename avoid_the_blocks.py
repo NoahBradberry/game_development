@@ -1,3 +1,5 @@
+#Added Score, collectible, movement boundaries, other obstacle and difficulty scaling
+
 import tkinter as tk
 import random
 import time
@@ -31,6 +33,9 @@ coins = []
 alive = True
 enemies_spawned = 0
 score = 0
+side_bar_count = 0 
+left_side_bar = 0
+right_side_bar = 0 
 score_text = canvas.create_text(10, 10, anchor = "nw", text = f"Score: {score}", fill = "white")
 
 #Movement functions
@@ -54,12 +59,20 @@ root.bind("<Right>", move_right)
 
 #Enemies
 def spawn_enemy():
-    x = random.randint(0, SCREEN_WIDTH - ENEMY_SIZE)
+    global enemies_spawned
+    x = random.randint(side_bar_count * 20, SCREEN_WIDTH - ENEMY_SIZE - side_bar_count * 20)
     enemy = canvas.create_rectangle(x, 0, x + ENEMY_SIZE, ENEMY_SIZE, fill = "red")
     enemies.append(enemy)
+    enemies_spawned += 1
+
+def drop_bars():
+    if canvas.coords(right_side_bar)[3] != SCREEN_HEIGHT and canvas.coords(left_side_bar)[3] != SCREEN_HEIGHT:
+        canvas.move(right_side_bar, 0, 10)
+        canvas.move(left_side_bar, 0, 10)
+        canvas.after(30, drop_bars)
 
 def spawn_coin():
-    x = random.randint(0, SCREEN_WIDTH - COIN_SIZE)
+    x = random.randint(side_bar_count * 20, SCREEN_WIDTH - ENEMY_SIZE - side_bar_count * 20)
     coin = canvas.create_rectangle(x, 0, x + COIN_SIZE, COIN_SIZE, fill = "gold")
     coins.append(coin)
 
@@ -67,6 +80,8 @@ def run_game():
     global alive
     global score
     global enemies_spawned
+    global right_side_bar
+    global left_side_bar
     #start_time = time.time()
 
     if not alive:
@@ -81,14 +96,13 @@ def run_game():
     
     if random.randint(1, 20) == 1:
         spawn_enemy()
-        enemies_spawned += 1
         
     
     if random.randint(1, 50) == 1:
         spawn_coin()
     
     for enemy in enemies:
-        canvas.move(enemy, 0, min(max(enemies_spawned, 10), 40))
+        canvas.move(enemy, 0, min(max(enemies_spawned, 10), 30))
 
         if canvas.bbox(enemy) and canvas.bbox(player):
             ex1, ey1, ex2, ey2 = canvas.bbox(enemy)
@@ -96,6 +110,18 @@ def run_game():
 
             if ex1 < px2 and ex2 > px1 and ey1 < py2 and ey2 > py1:
                 alive = False
+            
+    if enemies_spawned % 10 == 9:
+        global score_text
+        global side_bar_count
+        left_side_bar = canvas.create_rectangle(0, -SCREEN_HEIGHT, side_bar_count * 20 +20, 0, fill = "red")
+        right_side_bar = canvas.create_rectangle((SCREEN_WIDTH-side_bar_count * 20)-20, -SCREEN_HEIGHT, SCREEN_WIDTH, 0, fill = "red")
+        side_bar_count += 1
+        drop_bars()
+        canvas.delete(score_text)
+        score_text = canvas.create_text(10, 10, anchor = "nw", text = f"Score: {score}", fill = "white")
+        spawn_enemy()
+
     
     for coin in coins:
         canvas.move(coin, 0, 10)
@@ -108,6 +134,19 @@ def run_game():
                 canvas.delete(coin)
                 score += 1
                 canvas.itemconfig(score_text, text=f"Score: {score}")
+        
+    if canvas.bbox(right_side_bar) and canvas.bbox(player):
+            ex1, ey1, ex2, ey2 = canvas.bbox(right_side_bar)
+            px1, py1, px2, py2 = canvas.bbox(player)
+
+            if ex1 < px2 and ex2 > px1 and ey1 < py2 and ey2 > py1:
+                alive = False
+    if canvas.bbox(left_side_bar) and canvas.bbox(player):
+            ex1, ey1, ex2, ey2 = canvas.bbox(left_side_bar)
+            px1, py1, px2, py2 = canvas.bbox(player)
+
+            if ex1 < px2 and ex2 > px1 and ey1 < py2 and ey2 > py1:
+                alive = False
 
 
 
