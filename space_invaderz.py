@@ -47,8 +47,10 @@ canvas.pack()
 player_img = make_player_sprite()
 enemy_img = make_enemy_sprite()
 
-#create the player
-player = canvas.create_image(SCREEN_WIDTH//2, SCREEN_HEIGHT - 40, image = player_img, anchor = "center")
+def start():
+    global player
+    player = canvas.create_image(SCREEN_WIDTH//2, SCREEN_HEIGHT - 40, image = player_img, anchor = "center")
+    game_loop()
 
 #Enemy Formation - enemies do not move independently, but as a group
 ROWS = 4
@@ -97,9 +99,112 @@ lazer_img = make_lazer_sprite()
 def shoot(event):
     if len(lazers) > 0:
         return
-    
     px1, py1, px2, py2 = canvas.bbox(player)
     l = canvas.create_image(px1 + px2//2, py1, image = lazer_img, anchor = "s")
 
     lazers.append(l)
 root.bind("<space>", shoot)
+
+#Collisions
+
+def collision(a, l):
+    ax1, ay1, ax2, ay2 = canvas.bbox(a) #Alien Bounding Box
+    lx1, ly1, lx2, ly2 = canvas.bbox(l) #Lazer Bounding Box
+
+    return ax1 < lx2 and ax2 > lx1 and ay1 < ly2 and ay2 > ly1
+
+
+#Formation Movement
+enemy_dx = 4
+
+
+def move_enemies():
+    global enemy_dx
+
+    hit_wall = False
+    for e in enemies:
+        x1, y1, x2, y2 = canvas.bbox(e)
+
+        if x2 >= SCREEN_WIDTH - 10 and enemy_dx > 0:
+            hit_wall = True
+        if x1 <= 10 and enemy_dx < 0:
+            hit_wall = True
+
+    if hit_wall:
+        enemy_dx = -enemy_dx
+        for e in enemies:
+            canvas.move(e, 0, 15)
+    else:
+        for e in enemies:
+            canvas.move(e, enemy_dx, 0)
+
+
+
+#Game Loop
+
+alive = True
+
+def game_loop():
+    global alive
+
+    if not alive:
+        canvas.delete("all")
+        canvas.create_text(SCREEN_WIDTH//2, SCREEN_HEIGHT//2, text = "Game Over!", fill = "red", font = ("Ariel", 24))
+        return
+    move_enemies()
+    #Make our Lazers move
+
+    for l in lazers[:]:
+        canvas.move(l, 0, -12)
+        x1, y1, x2, y2 = canvas.bbox(l)
+        if y2 < 0:
+            canvas.delete(l)
+            lazers.remove(l)
+
+    #Lazer vs Alien
+    for l in lazers[:]:
+        for e in enemies[:]:
+            if collision(l,e):
+                canvas.delete(l)
+                canvas.delete(e)
+                if l in lazers:
+                    lazers.remove(l)
+                if e in enemies:
+                    enemies.remove(e)
+
+                break
+
+    #End Game Condition
+
+    for e in enemies:
+        ex1, ey1, ex2, ey2 = canvas.bbox(e)
+        px1, py1, px2, py2 = canvas.bbox(player)
+
+        if ey2 >= py1:
+            alive = False
+
+
+    root.after(40, game_loop)
+
+
+
+#Start Game / Reset
+def reset(event = None):
+    
+    global alive, enemy_dx
+    canvas.delete("all")
+    lazers.clear()
+    enemies.clear()
+    
+    alive = True
+    enemy_dx = 4
+
+    create_enemy_formation()
+    start()
+
+root.bind("r", reset)
+
+reset()
+root.mainloop()
+
+
