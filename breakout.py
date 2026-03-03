@@ -3,7 +3,6 @@ import random
 
 SCREEN_WIDTH = 1000
 SCREEN_HEIGHT = 700
-PLAYER_WIDTH = 160
 PLAYER_HEIGHT = 15
 BRICK_WIDTH = 80
 BRICK_HEIGHT = 30
@@ -29,17 +28,17 @@ class Ball:
     def move(self):
         self.canvas.move(self.id, self.dx, self.dy)
 
-
-
 def reset(event = None):
     canvas.delete("all")
     create_brick_formation()
-    global player, alive, powerups, balls
-    player = canvas.create_rectangle(SCREEN_WIDTH // 2 - PLAYER_WIDTH // 2, SCREEN_HEIGHT - PLAYER_HEIGHT, SCREEN_WIDTH // 2 + PLAYER_WIDTH// 2, SCREEN_HEIGHT, fill = "white")
+    global player, alive, powerups, balls, player_width, player_velocity
+    player_width = 160
+    player = canvas.create_rectangle(SCREEN_WIDTH // 2 - player_width // 2, SCREEN_HEIGHT - PLAYER_HEIGHT, SCREEN_WIDTH // 2 + player_width// 2, SCREEN_HEIGHT, fill = "white")
     balls = []
     balls.append(Ball(canvas, SCREEN_WIDTH // 2, SCREEN_HEIGHT // 2, 0, 10))
     alive = True
     powerups = []
+    player_velocity = 20
     game_loop()
 
 
@@ -69,10 +68,10 @@ def create_brick_formation():
 #Player Movement
 def move_left(event):
     if canvas.coords(player)[0] > 0:
-        canvas.move(player, -15, 0)
+        canvas.move(player, -player_velocity, 0)
 def move_right(event):
     if canvas.coords(player)[2] < SCREEN_WIDTH:
-        canvas.move(player, 20, 0)
+        canvas.move(player, player_velocity, 0)
 
 
 root.bind("<KeyPress-Left>", move_left)
@@ -100,8 +99,16 @@ def check_bounce_brick(ball):
             offset = ((brx1 + brx2) / 2) - ((bx1 + bx2) / 2)
             ball.dx = ball.dx - (offset/10)
             if random.randint(1, 1) == 1:
-                powerup = canvas.create_oval(brx1 + BRICK_WIDTH // 2 - POWERUP_DIAMETER // 2, bry2, brx1 + BRICK_WIDTH // 2 + POWERUP_DIAMETER // 2, bry2 + POWERUP_DIAMETER, fill = "green")
-                powerups.append(powerup)
+                num = random.randint(1,3)
+                if num == 1:
+                    powerup = canvas.create_oval(brx1 + BRICK_WIDTH // 2 - POWERUP_DIAMETER // 2, bry2, brx1 + BRICK_WIDTH // 2 + POWERUP_DIAMETER // 2, bry2 + POWERUP_DIAMETER, fill = "green")
+                    powerups.append(powerup)
+                elif num == 2:
+                    powerup = canvas.create_oval(brx1 + BRICK_WIDTH // 2 - POWERUP_DIAMETER // 2, bry2, brx1 + BRICK_WIDTH // 2 + POWERUP_DIAMETER // 2, bry2 + POWERUP_DIAMETER, fill = "blue")
+                    powerups.append(powerup)
+                elif num == 3:
+                    powerup = canvas.create_oval(brx1 + BRICK_WIDTH // 2 - POWERUP_DIAMETER // 2, bry2, brx1 + BRICK_WIDTH // 2 + POWERUP_DIAMETER // 2, bry2 + POWERUP_DIAMETER, fill = "red")
+                    powerups.append(powerup)
 
 def check_bounce_wall(ball):
     bx1, by1, bx2, by2 = canvas.bbox(ball.id)
@@ -114,16 +121,24 @@ def check_bounce_wall(ball):
     if by1 < 0:
         ball.dy *= -1
 
-
 def check_loss(ball):
     global alive
     bx1, by1, bx2, by2 = canvas.bbox(ball.id)
     if by2 > SCREEN_HEIGHT:
-        canvas.delete(ball)
+        canvas.delete(ball.id)
         balls.remove(ball)
         
         if len(balls) == 0:
             alive = False
+
+def make_paddle_bigger():
+    global player_width
+    player_width += 50
+    x0, y0, x1, y1, = canvas.coords(player)
+
+    x1 = x0 + player_width
+
+    canvas.coords(player, x0, y0, x1, y1)
 
 def check_win():
 
@@ -138,12 +153,20 @@ def check_win():
         canvas.create_text(SCREEN_WIDTH//2, SCREEN_HEIGHT//2, text = "YOU WIN!", fill = "white", font = 100)
         canvas.create_text(SCREEN_WIDTH // 2, SCREEN_HEIGHT // 2 + 50, text = "Press r to restart", fill = "white", font = 100)
 
-def activate_powerup():
-    for ball in balls[:]:
-        bx1, by1, bx2, by2 = canvas.bbox(ball.id)
+def activate_powerup(powerup):
+    global player_width
+    if canvas.itemcget(powerup, "fill") == "green":
+        for ball in balls[:]:
+            bx1, by1, bx2, by2 = canvas.bbox(ball.id)
 
-        balls.append(Ball(canvas, (bx1 + bx2) / 2, (by1 + by2) / 2, -ball.dx, -ball.dy))
+            balls.append(Ball(canvas, (bx1 + bx2) / 2, (by1 + by2) / 2, ball.dx * 1.3, ball.dy))
+            balls.append(Ball(canvas, (bx1 + bx2) / 2, (by1 + by2) / 2, ball.dx * 0.7, ball.dy))
+    elif canvas.itemcget(powerup, "fill") == "blue":
+        make_paddle_bigger()
+    elif canvas.itemcget(powerup, "fill") == "red":
+        global player_velocity
 
+        player_velocity += 10
 
 def check_powerups():
     for powerup in powerups:
@@ -151,18 +174,13 @@ def check_powerups():
         plx1, ply1, plx2, ply2 = canvas.bbox(player)
 
         if pox1 < plx2 and pox2 > plx1 and poy1 < ply2 and poy2 > ply1:
-            activate_powerup()
+            activate_powerup(powerup)
             powerups.remove(powerup)
             canvas.delete(powerup)
         
         elif poy2 > SCREEN_HEIGHT:
             powerups.remove(powerup)
             canvas.delete(powerup)
-
-
-
-
-alive = True
 
 def game_loop():
     if not alive:
