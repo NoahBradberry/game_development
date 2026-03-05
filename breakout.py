@@ -39,7 +39,6 @@ def reset(event = None):
     alive = True
     powerups = []
     player_velocity = 20
-    game_loop()
 
 
     
@@ -206,4 +205,5 @@ def game_loop():
 
 
 reset()
+game_loop()
 root.mainloop()
