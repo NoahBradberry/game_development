@@ -97,7 +97,7 @@ def check_bounce_brick(ball):
             ball.dy *= -1
             offset = ((brx1 + brx2) / 2) - ((bx1 + bx2) / 2)
             ball.dx = ball.dx - (offset/10)
-            if random.randint(1, 1) == 1:
+            if random.randint(1, 5) == 1:
                 num = random.randint(1,3)
                 if num == 1:
                     powerup = canvas.create_oval(brx1 + BRICK_WIDTH // 2 - POWERUP_DIAMETER // 2, bry2, brx1 + BRICK_WIDTH // 2 + POWERUP_DIAMETER // 2, bry2 + POWERUP_DIAMETER, fill = "green")
