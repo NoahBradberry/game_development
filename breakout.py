@@ -17,7 +17,7 @@ root.title("Breakout")
 canvas = tk.Canvas(root, width = SCREEN_WIDTH, height = SCREEN_HEIGHT, bg = "black")
 canvas.pack()
 
-class Ball:
+class Ball: #ChatGPT helped here because classes are scary
     def __init__(self, canvas, start_x, start_y, dx, dy):
         self.canvas = canvas
         self.dx = dx
@@ -39,6 +39,10 @@ def reset(event = None):
     alive = True
     powerups = []
     player_velocity = 20
+
+def revive(event):
+    reset()
+    game_loop()
 
 
     
@@ -75,7 +79,7 @@ def move_right(event):
 
 root.bind("<KeyPress-Left>", move_left)
 root.bind("<Right>", move_right)
-root.bind("r", reset)
+
 
 def check_bounce_paddle(ball):
     px1, py1, px2, py2 = canvas.bbox(player)
@@ -198,6 +202,10 @@ def game_loop():
                 canvas.move(powerup, 0, 7)
         check_powerups()
         check_win()
+        if alive == True:
+            root.bind("r", reset)
+        else:
+            root.bind("r", revive)
         root.after(40, game_loop)
 
 
