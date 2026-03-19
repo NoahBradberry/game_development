@@ -1,5 +1,7 @@
 import tkinter as tk
 import random
+import math
+
 
 SCREEN_WIDTH = 1000
 SCREEN_HEIGHT = 700
@@ -17,7 +19,7 @@ root.title("Breakout")
 canvas = tk.Canvas(root, width = SCREEN_WIDTH, height = SCREEN_HEIGHT, bg = "black")
 canvas.pack()
 
-class Ball: #ChatGPT helped here because classes are scary
+class Ball: 
     def __init__(self, canvas, start_x, start_y, dx, dy):
         self.canvas = canvas
         self.dx = dx
@@ -79,6 +81,7 @@ def move_right(event):
 
 root.bind("<KeyPress-Left>", move_left)
 root.bind("<Right>", move_right)
+root.bind("r", reset)
 
 
 def check_bounce_paddle(ball):
@@ -87,8 +90,11 @@ def check_bounce_paddle(ball):
 
     if bx1 < px2 and bx2 > px1 and by1 < py2 and by2 > py1:
         offset = ((px1 + px2) / 2) - ((bx1 + bx2) / 2)
-        ball.dx = ball.dx - (offset/10)
-        ball.dy *= -1
+        ball.dx = max(min(ball.dx - (offset/10), 9), -9)
+        print(ball.dx)
+        ball.dy = -math.sqrt(100 - abs(ball.dx ** 2))
+        print(ball.dy)
+        print(math.sqrt(ball.dx ** 2 + ball.dy ** 2))
 
 def check_bounce_brick(ball):
     for brick in bricks:
@@ -98,9 +104,9 @@ def check_bounce_brick(ball):
         if bx1 < brx2 and bx2 > brx1 and by1 < bry2 and by2 > bry1:
             canvas.delete(brick)
             bricks.remove(brick)
-            ball.dy *= -1
             offset = ((brx1 + brx2) / 2) - ((bx1 + bx2) / 2)
-            ball.dx = ball.dx - (offset/10)
+            ball.dx = max(min(ball.dx - (offset/10), 9), -9)
+            ball.dy = math.sqrt(100 - abs(ball.dx ** 2))
             if random.randint(1, 5) == 1:
                 num = random.randint(1,3)
                 if num == 1:
