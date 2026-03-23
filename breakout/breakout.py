@@ -91,10 +91,7 @@ def check_bounce_paddle(ball):
     if bx1 < px2 and bx2 > px1 and by1 < py2 and by2 > py1:
         offset = ((px1 + px2) / 2) - ((bx1 + bx2) / 2)
         ball.dx = max(min(ball.dx - (offset/10), 9), -9)
-        print(ball.dx)
         ball.dy = -math.sqrt(100 - abs(ball.dx ** 2))
-        print(ball.dy)
-        print(math.sqrt(ball.dx ** 2 + ball.dy ** 2))
 
 def check_bounce_brick(ball):
     for brick in bricks:
@@ -213,10 +210,6 @@ def game_loop():
         else:
             root.bind("r", revive)
         root.after(40, game_loop)
-
-
-
-
 
 reset()
 game_loop()
