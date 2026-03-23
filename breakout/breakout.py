@@ -71,10 +71,10 @@ def create_brick_formation():
             bricks.append(brick)
 
 #Player Movement
-def move_left(event):
+def move_left(event = None):
     if canvas.coords(player)[0] > 0:
         canvas.move(player, -player_velocity, 0)
-def move_right(event):
+def move_right(event = None):
     if canvas.coords(player)[2] < SCREEN_WIDTH:
         canvas.move(player, player_velocity, 0)
 
