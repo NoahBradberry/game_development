@@ -211,10 +211,6 @@ def game_loop():
             root.bind("r", revive)
         root.after(40, game_loop)
 
-
-
-
-
 reset()
 game_loop()
 root.mainloop()

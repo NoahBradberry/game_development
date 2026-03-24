@@ -79,7 +79,7 @@ def move_left(event):
     canvas.move(player, -15, 0)
 def move_right(event):
     canvas.move(player, 15, 0)
-#BINGING
+#BINDING
 root.bind("<Left>", move_left)
 root.bind("<Right>", move_right)
 
