@@ -4,8 +4,7 @@
 import tkinter as tk
 import random
 import math
-import threading
-import time
+
 
 
 SCREEN_WIDTH = 1000
@@ -35,11 +34,16 @@ class Bullet:
 
 
 def reset(event = None):
-    global player, enemies, bullets
+    global player, enemies, bullets, health, alive
+    alive = True
     enemies = []
     bullets = []
+    health = 100
     canvas.delete("all")
     player = canvas.create_rectangle(SCREEN_WIDTH // 2, SCREEN_HEIGHT // 2, SCREEN_WIDTH // 2 + PLAYER_LENGTH, SCREEN_HEIGHT // 2 + PLAYER_LENGTH, fill = "cyan")
+    if alive == False:
+        game_loop()
+        make_enemy()
 
 def make_enemy():
     global enemy
@@ -128,8 +132,23 @@ def check_hit(bullet):
             bullets.remove(bullet)
             enemies.remove(enemy)
 
+def check_collision_player(enemy):
+    global health
+    try:
+        px1, py1, px2, py2 = canvas.coords(player)
+        ex1, ey1, ex2, ey2 = canvas.coords(enemy)
 
+        if px1 < ex2 and px2 > ex1 and py1 < ey2 and py2 > ey1:
+            health -= 10
+    except:
+        return
 
+def game_over():
+    global alive
+    alive = False
+    canvas.delete("all")
+
+    game_over_text = canvas.create_text(SCREEN_WIDTH // 2, SCREEN_HEIGHT // 2, text= "Game Over. Press r to Restart", fill = "white", font=("Arial", 12))
 
           
 
@@ -153,10 +172,7 @@ root.bind("<KeyRelease>", key_release)
 root.bind("r", reset)
 root.bind("<Button-1>", shoot)
 
-def game_loop():
-
-    global enemy
-    
+def game_loop():    
     dx = 0
     dy = 0
 
@@ -169,22 +185,22 @@ def game_loop():
     elif keys["Down"]:
         dy += PLAYER_VELO
     if keys["Left"] and keys["Down"]:
-         dx = - math.sqrt(0.5 * (PLAYER_VELO ** 2))
-         dy = math.sqrt(0.5 * (PLAYER_VELO ** 2))
+        dx = - math.sqrt(0.5 * (PLAYER_VELO ** 2))
+        dy = math.sqrt(0.5 * (PLAYER_VELO ** 2))
     if keys["Left"] and keys["Up"]:
-         dx = - math.sqrt(0.5 * (PLAYER_VELO ** 2))
-         dy = - math.sqrt(0.5 * (PLAYER_VELO ** 2))
+        dx = - math.sqrt(0.5 * (PLAYER_VELO ** 2))
+        dy = - math.sqrt(0.5 * (PLAYER_VELO ** 2))
     if keys["Right"] and keys["Down"]:
-         dx = math.sqrt(0.5 * (PLAYER_VELO ** 2))
-         dy = math.sqrt(0.5 * (PLAYER_VELO ** 2))
+        dx = math.sqrt(0.5 * (PLAYER_VELO ** 2))
+        dy = math.sqrt(0.5 * (PLAYER_VELO ** 2))
     if keys["Right"] and keys["Up"]:
-         dx = math.sqrt(0.5 * (PLAYER_VELO ** 2))
-         dy = - math.sqrt(0.5 * (PLAYER_VELO ** 2))
+        dx = math.sqrt(0.5 * (PLAYER_VELO ** 2))
+        dy = - math.sqrt(0.5 * (PLAYER_VELO ** 2))
 
     px1, py1, px2, py2 = canvas.coords(player)
 
     if 0 <= px1 + dx and px2 + dx <= SCREEN_WIDTH:
-         canvas.move(player, dx, 0)
+        canvas.move(player, dx, 0)
 
     if 0 <= py1 + dy and py2 + dy <= SCREEN_HEIGHT:
         canvas.move(player, 0, dy)
@@ -198,6 +214,18 @@ def game_loop():
     
     for bullet in bullets[:]:
         check_hit(bullet)
+
+    
+    for enemy in enemies:
+        check_collision_player(enemy)
+        print(health)
+        if health <= 0:
+            game_over()
+            break
+
+
+
+
 
 
     root.after(16, game_loop)
