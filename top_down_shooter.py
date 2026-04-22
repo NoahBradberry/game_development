@@ -1,14 +1,9 @@
 #TODO Health, damage, game over, shooting rate limit, reload, score, sound?, death animation, health bar and score UI, enemy typrs (faster, tanks, shoot back), waves, gun upgrades (increase limit, spread shot, bigger bullets)
 
-
 import tkinter as tk
 import random
 import math
 
-
-
-SCREEN_WIDTH = 1000
-SCREEN_HEIGHT = 700
 PLAYER_LENGTH = 25
 PLAYER_VELO = 5
 ENEMY_LENGTH = 25
@@ -17,9 +12,13 @@ BULLET_VELO = 10
 
 root = tk.Tk()
 root.title("Top-Down Shooter")
+root.attributes("-fullscreen", True)
 
-canvas = tk.Canvas(root, width = SCREEN_WIDTH, height = SCREEN_HEIGHT, bg = "black")
-canvas.pack()
+SCREEN_WIDTH = root.winfo_screenwidth()
+SCREEN_HEIGHT = root.winfo_screenheight()
+
+canvas = tk.Canvas(root, bg = "black")
+canvas.pack(fill=tk.BOTH, expand=True)
 
 class Bullet:
      def __init__(self, canvas, x1, y1, x2, y2, dx, dy):
@@ -31,7 +30,6 @@ class Bullet:
 
      def move(self):
         self.canvas.move(self.id, self.dx, self.dy)
-
 
 def reset(event = None):
     global player, enemies, bullets, health, alive
@@ -51,7 +49,6 @@ def make_enemy():
     start_x = random.randint(0, SCREEN_WIDTH)
     start_y = random.randint(0, SCREEN_HEIGHT)
 
-
     if spawn_side == 1:
         enemy = canvas.create_rectangle(- ENEMY_LENGTH, start_y , 0, start_y + ENEMY_LENGTH, fill = "green" )
         enemies.append(enemy)
@@ -65,14 +62,7 @@ def make_enemy():
          enemy = canvas.create_rectangle(start_x, 0 , start_x + ENEMY_LENGTH, 0 - ENEMY_LENGTH, fill = "green")
          enemies.append(enemy)
     
-    
-
     root.after(2000, make_enemy)
-
-
-
-    
-
 
 def move_enemies():
     px1, py1, px2, py2 = canvas.coords(player)
@@ -91,9 +81,7 @@ def move_enemies():
 
         if distance == 0:
             continue  
-        
-
-
+    
         move_x = (dx / distance) * ENEMY_VELO
         move_y = (dy / distance) * ENEMY_VELO
 
@@ -150,8 +138,6 @@ def game_over():
 
     game_over_text = canvas.create_text(SCREEN_WIDTH // 2, SCREEN_HEIGHT // 2, text= "Game Over. Press r to Restart", fill = "white", font=("Arial", 12))
 
-          
-
 keys = {
         "Left": False,
         "Right": False,
@@ -171,66 +157,60 @@ root.bind("<KeyPress>", key_press)
 root.bind("<KeyRelease>", key_release)
 root.bind("r", reset)
 root.bind("<Button-1>", shoot)
+root.bind("<Escape>", lambda e: root.destroy())
 
 def game_loop():    
     dx = 0
     dy = 0
+    if alive:
 
-    if keys["Left"]:
-        dx -= PLAYER_VELO
-    elif keys["Right"]:
-        dx += PLAYER_VELO
-    elif keys["Up"]:
-        dy -= PLAYER_VELO
-    elif keys["Down"]:
-        dy += PLAYER_VELO
-    if keys["Left"] and keys["Down"]:
-        dx = - math.sqrt(0.5 * (PLAYER_VELO ** 2))
-        dy = math.sqrt(0.5 * (PLAYER_VELO ** 2))
-    if keys["Left"] and keys["Up"]:
-        dx = - math.sqrt(0.5 * (PLAYER_VELO ** 2))
-        dy = - math.sqrt(0.5 * (PLAYER_VELO ** 2))
-    if keys["Right"] and keys["Down"]:
-        dx = math.sqrt(0.5 * (PLAYER_VELO ** 2))
-        dy = math.sqrt(0.5 * (PLAYER_VELO ** 2))
-    if keys["Right"] and keys["Up"]:
-        dx = math.sqrt(0.5 * (PLAYER_VELO ** 2))
-        dy = - math.sqrt(0.5 * (PLAYER_VELO ** 2))
+        if keys["Left"]:
+            dx -= PLAYER_VELO
+        elif keys["Right"]:
+            dx += PLAYER_VELO
+        elif keys["Up"]:
+            dy -= PLAYER_VELO
+        elif keys["Down"]:
+            dy += PLAYER_VELO
+        if keys["Left"] and keys["Down"]:
+            dx = - math.sqrt(0.5 * (PLAYER_VELO ** 2))
+            dy = math.sqrt(0.5 * (PLAYER_VELO ** 2))
+        if keys["Left"] and keys["Up"]:
+            dx = - math.sqrt(0.5 * (PLAYER_VELO ** 2))
+            dy = - math.sqrt(0.5 * (PLAYER_VELO ** 2))
+        if keys["Right"] and keys["Down"]:
+            dx = math.sqrt(0.5 * (PLAYER_VELO ** 2))
+            dy = math.sqrt(0.5 * (PLAYER_VELO ** 2))
+        if keys["Right"] and keys["Up"]:
+            dx = math.sqrt(0.5 * (PLAYER_VELO ** 2))
+            dy = - math.sqrt(0.5 * (PLAYER_VELO ** 2))
 
-    px1, py1, px2, py2 = canvas.coords(player)
+        px1, py1, px2, py2 = canvas.coords(player)
 
-    if 0 <= px1 + dx and px2 + dx <= SCREEN_WIDTH:
-        canvas.move(player, dx, 0)
+        if 0 <= px1 + dx and px2 + dx <= SCREEN_WIDTH:
+            canvas.move(player, dx, 0)
 
-    if 0 <= py1 + dy and py2 + dy <= SCREEN_HEIGHT:
-        canvas.move(player, 0, dy)
-    
-    
-    move_enemies()
+        if 0 <= py1 + dy and py2 + dy <= SCREEN_HEIGHT:
+            canvas.move(player, 0, dy)
+        
+        
+        move_enemies()
 
-    for bullet in bullets[:]:
-        bullet.move()
-        check_delete(bullet)
-    
-    for bullet in bullets[:]:
-        check_hit(bullet)
+        for bullet in bullets[:]:
+            bullet.move()
+            check_delete(bullet)
+        
+        for bullet in bullets[:]:
+            check_hit(bullet)
 
-    
-    for enemy in enemies:
-        check_collision_player(enemy)
-        print(health)
-        if health <= 0:
-            game_over()
-            break
+        
+        for enemy in enemies:
+            check_collision_player(enemy)
+            if health <= 0:
+                game_over()
+                break
 
-
-
-
-
-
-    root.after(16, game_loop)
-
-
+        root.after(16, game_loop)
 
 reset()
 game_loop()
